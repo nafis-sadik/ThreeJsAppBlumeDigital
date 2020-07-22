@@ -4,9 +4,13 @@ let modelURL1 = "./assets/chopper/scene.gltf";
 let modelURL2 = "./assets/colourdraftssimon_stalenhag_scene/scene.gltf";
 
 /***********System Config***********/
-import { FXAAShader } from "../lib/FXAAShader.js";
-import { ShaderPass } from '../lib/postprocessing/src/passes/ShaderPass.js';
-import { RenderPass } from '../lib/postprocessing/src/passes/RenderPass.js';
+var stats = new Stats();
+import * as THREE from '../lib/threejs/build/three.module.js';
+import Stats from '../lib/threejs/build/three.module.js';
+import { GLTFLoader } from '../lib/threejs/examples/jsm/loaders/GLTFLoader.js';
+import { EffectComposer } from '../lib/threejs/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from '../lib/threejs/examples/jsm/postprocessing/RenderPass.js';
+import { SMAAPass } from '../lib/threejs/examples/jsm/postprocessing/SMAAPass.js';
 
 const RendererConfig = {
   Width : window.innerWidth,
@@ -14,17 +18,17 @@ const RendererConfig = {
   AspectRatio: window.innerWidth / window.innerHeight,
   FieldOfView: 45,
   NearPane: 1,
-  FarPane: 10000
+  FarPane: 1000
 };
 
 const WebRenderer3 = {
   MainCamera : new THREE.PerspectiveCamera(RendererConfig.FieldOfView, RendererConfig.AspectRatio, RendererConfig.NearPane, RendererConfig.FarPane),
   MainScene : new THREE.Scene(),
-  gltfLoader : new THREE.GLTFLoader(),
+  gltfLoader : new GLTFLoader(),
   Renderer : new THREE.WebGLRenderer({antialias:true})
 };
 
-const Composer = new POSTPROCESSING.EffectComposer(WebRenderer3.Renderer);
+const Composer = new EffectComposer(WebRenderer3.Renderer);
 
 let ConfigureRenderer = function(){
   RendererConfig.Width = window.innerWidth;
@@ -100,7 +104,7 @@ let ConfigureOrbitController = function(){
   OrbitController.enablePan = false;
 };
 
-let GLTFLoader = function(url, name, defaultScale, defaultPosition, defaultRotation, parentObject){
+let ModelLoader_GLTF = function(url, name, defaultScale, defaultPosition, defaultRotation, parentObject){
   WebRenderer3.gltfLoader.load(url,
     // called when the resource is loaded
     function (gltf) {
@@ -197,8 +201,8 @@ let start = function(){
   // Lights Added
 
   // Loading 3d Model
-  GLTFLoader(modelURL1, "model1", new THREE.Vector3(0.02, 0.02, 0.02), new THREE.Vector3(0, 20, 100), new THREE.Vector3(0, -90, 0), ChopperRef);
-  GLTFLoader(modelURL2, "model2", new THREE.Vector3(200, 200, 200), new THREE.Vector3(0, -50, 0), new THREE.Vector3(0, 0, 0));
+  ModelLoader_GLTF(modelURL1, "model1", new THREE.Vector3(0.02, 0.02, 0.02), new THREE.Vector3(0, 20, 100), new THREE.Vector3(0, -90, 0), ChopperRef);
+  ModelLoader_GLTF(modelURL2, "model2", new THREE.Vector3(200, 200, 200), new THREE.Vector3(0, -50, 0), new THREE.Vector3(0, 0, 0));
   WebRenderer3.Renderer.setClearColor();
   WebRenderer3.Renderer.gammaOutput = true;
   WebRenderer3.MainCamera.position.z = 250;

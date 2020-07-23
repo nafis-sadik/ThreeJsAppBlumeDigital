@@ -1,16 +1,15 @@
 /***********Application***********/
 
-let modelURL1 = "./assets/chopper/scene.gltf";
-let modelURL2 = "./assets/colourdraftssimon_stalenhag_scene/scene.gltf";
+let modelURL1 = "../assets/armchair/scene.gltf";
 
 /***********System Config***********/
-var stats = new Stats();
 import * as THREE from '../lib/threejs/build/three.module.js';
-import Stats from '../lib/threejs/build/three.module.js';
 import { GLTFLoader } from '../lib/threejs/examples/jsm/loaders/GLTFLoader.js';
 import { EffectComposer } from '../lib/threejs/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from '../lib/threejs/examples/jsm/postprocessing/RenderPass.js';
 import { SMAAPass } from '../lib/threejs/examples/jsm/postprocessing/SMAAPass.js';
+import { OrbitControls } from '../lib/threejs/examples/jsm/controls/OrbitControls.js';
+import { UnrealBloomPass } from '../lib/threejs/examples/jsm/postprocessing/UnrealBloomPass.js';
 
 const RendererConfig = {
   Width : window.innerWidth,
@@ -18,7 +17,7 @@ const RendererConfig = {
   AspectRatio: window.innerWidth / window.innerHeight,
   FieldOfView: 45,
   NearPane: 1,
-  FarPane: 1000
+  FarPane: 10000
 };
 
 const WebRenderer3 = {
@@ -44,19 +43,17 @@ let ConfigureRenderer = function(){
 
   // Preparing Post Processing
   let renderPass = new RenderPass (WebRenderer3.MainScene, WebRenderer3.MainCamera);
-
-  let bloomPass = new POSTPROCESSING.EffectPass(WebRenderer3.MainCamera, new POSTPROCESSING.BloomEffect());
-
-  let FXAAPass = new ShaderPass( FXAAShader );
-  FXAAShader.uniforms[ 'resolution' ].value.x = 1 / ( RendererConfig.Width * RendererConfig.AspectRatio );
-  FXAAShader.uniforms[ 'resolution' ].value.y = 1 / ( RendererConfig.Height * RendererConfig.AspectRatio );
-
-  bloomPass.renderToScreen = true;
-  FXAAPass.renderToScreen = true;
-
   Composer.addPass(renderPass);
-  Composer.addPass(bloomPass);
-  Composer.addPass(FXAAPass);
+
+  let bloomPass = new UnrealBloomPass(new THREE.Vector2( RendererConfig.Width, RendererConfig.Height ));
+  bloomPass.exposure = 1.2;
+  bloomPass.threshold = 0;
+  bloomPass.strength = 0.25;
+  bloomPass.radius = 1;
+	Composer.addPass(bloomPass);
+
+  let smaaPass = new SMAAPass(RendererConfig.Width * RendererConfig.AspectRatio, RendererConfig.Height * RendererConfig.AspectRatio);
+  Composer.addPass(smaaPass);
 };
 /***********System Config***********/
 
@@ -95,13 +92,14 @@ let skyBox = function (front, back, up, down, left, right) {
   return theSkyBox;
 };
 
-const OrbitController = new THREE.OrbitControls( WebRenderer3.MainCamera, WebRenderer3.Renderer.domElement );
+const OrbitController = new OrbitControls( WebRenderer3.MainCamera, WebRenderer3.Renderer.domElement );
 
 let ConfigureOrbitController = function(){
   OrbitController.minDistance = 100;
   OrbitController.maxDistance = 1000;
-  OrbitController.autoRotate = false;
+  OrbitController.autoRotate = true;
   OrbitController.enablePan = false;
+  OrbitController.enableDamping = true;
 };
 
 let ModelLoader_GLTF = function(url, name, defaultScale, defaultPosition, defaultRotation, parentObject){
@@ -118,6 +116,8 @@ let ModelLoader_GLTF = function(url, name, defaultScale, defaultPosition, defaul
       WebRenderer3.MainScene.add(mesh);
       if(parentObject !== undefined && parentObject !== null){
         parentObject.add(mesh);
+        console.log(mesh);
+        return mesh;
       }
     },
     // called when loading is in progresses
@@ -163,7 +163,7 @@ let init = function () {
   ConfigureOrbitController();
   ConfigureRenderer();
   WebRenderer3.MainScene.add(WebRenderer3.MainCamera);
-  $("#Viewport").append(WebRenderer3.Renderer.domElement);
+  document.getElementById('Viewport').append(WebRenderer3.Renderer.domElement);
   start();
   GameLoop();
 };
@@ -176,57 +176,33 @@ let GameLoop = function(){
 };
 
 /*************Engine*************/
-let ChopperRef = new THREE.Object3D();
-ChopperRef.name = 'ChopperRef';
-ChopperRef.position.set(0, 0, 0);
-WebRenderer3.MainScene.add(ChopperRef);
-
-let choperFan1 = WebRenderer3.MainScene.getObjectByName('static_rotor');
-let choperFan2 = WebRenderer3.MainScene.getObjectByName('static_rotor2');
 let start = function(){
-  skyBox('assets/SkyBox/front.png', 'assets/SkyBox/back.png', 'assets/SkyBox/up.png', 'assets/SkyBox/down.png', 'assets/SkyBox/left.png', 'assets/SkyBox/right.png');
+  skyBox('../assets/SkyBox/front.png', '../assets/SkyBox/back.png', '../assets/SkyBox/up.png', '../assets/SkyBox/down.png', '../assets/SkyBox/left.png', '../assets/SkyBox/right.png');
 
-  /* Setting up the sun -- recommended for yellowish light #c1582d*/
   let Sun = AddLight("DirectionalLight", "#aac0c0", true, "Sun");
-  Sun.position.set(9, 90, 9);
+  Sun.position.set(25, 90, 25);
 
   // Adding Lights
-  let PointLight3 = AddLight("PointLight", '#abbdc1', true, "PointLight3");
-  PointLight3.position.set(0,300,-500);
-  let PointLight2 = AddLight("PointLight", '#abbdc1', true, "PointLight2");
-  PointLight2.position.set(500,300,0);
-  let PointLight4 = AddLight("PointLight", '#708dc1', true, "PointLight4 ");
-  PointLight4.position.set(-500,300,500);
-
+  let PointLight1 = AddLight("PointLight", '#abbdc1', true, "PointLight2");
+  PointLight1.position.set(500,300,0);
+  let PointLight2 = AddLight("PointLight", '#708dc1', true, "PointLight4 ");
+  PointLight2.position.set(-500,300,500);
+  let PointLight3 = AddLight("PointLight", '#708dc1', true, "PointLight4 ");
+  PointLight3.position.set(0,300,0);
   // Lights Added
 
   // Loading 3d Model
-  ModelLoader_GLTF(modelURL1, "model1", new THREE.Vector3(0.02, 0.02, 0.02), new THREE.Vector3(0, 20, 100), new THREE.Vector3(0, -90, 0), ChopperRef);
-  ModelLoader_GLTF(modelURL2, "model2", new THREE.Vector3(200, 200, 200), new THREE.Vector3(0, -50, 0), new THREE.Vector3(0, 0, 0));
+  let armChair = ModelLoader_GLTF(modelURL1, "model1", new THREE.Vector3(0.1, 0.1, 0.1), new THREE.Vector3(0, -50, 0), new THREE.Vector3(0, 0, 0));
   WebRenderer3.Renderer.setClearColor();
   WebRenderer3.Renderer.gammaOutput = true;
   WebRenderer3.MainCamera.position.z = 250;
   WebRenderer3.MainCamera.position.y = 0;
+
+  console.log(armChair);
 };
 
 
 let update = function(){
-  // Chopper rotation
-  ChopperRef.rotation.set(ChopperRef.rotation.x, ChopperRef.rotation.y + (0.5 * clock.getDelta()), ChopperRef.rotation.z);
-
-  // Chopper fans
-  if(choperFan1 !== undefined){
-    //choperFan1.rotation.set(choperFan1.rotation.x, choperFan1.rotation.y + (10 * clock.getDelta()), choperFan1.rotation.z);
-    choperFan1.rotation.y += 15 * (Math.PI / 180);
-  } else {
-    choperFan1 = WebRenderer3.MainScene.getObjectByName('static_rotor');
-  }
-  if(choperFan2 !== undefined){
-    choperFan2.rotation.set(choperFan2.rotation.x, choperFan2.rotation.y, choperFan2.rotation.z);
-  } else {
-    choperFan2 = WebRenderer3.MainScene.getObjectByName('static_rotor2');
-  }
-
   // Orbit Control update
   OrbitController.update();
 };

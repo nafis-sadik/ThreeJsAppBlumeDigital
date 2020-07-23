@@ -10,6 +10,7 @@ import { RenderPass } from '../lib/threejs/examples/jsm/postprocessing/RenderPas
 import { SMAAPass } from '../lib/threejs/examples/jsm/postprocessing/SMAAPass.js';
 import { OrbitControls } from '../lib/threejs/examples/jsm/controls/OrbitControls.js';
 import { UnrealBloomPass } from '../lib/threejs/examples/jsm/postprocessing/UnrealBloomPass.js';
+import { LoadingManager } from '../lib/threejs/examples/jsm/loaders/LoadingManager.js';
 
 const RendererConfig = {
   Width : window.innerWidth,
@@ -20,10 +21,12 @@ const RendererConfig = {
   FarPane: 10000
 };
 
+let loadingManager = new LoadingManager();
+
 const WebRenderer3 = {
   MainCamera : new THREE.PerspectiveCamera(RendererConfig.FieldOfView, RendererConfig.AspectRatio, RendererConfig.NearPane, RendererConfig.FarPane),
   MainScene : new THREE.Scene(),
-  gltfLoader : new GLTFLoader(),
+  gltfLoader : new GLTFLoader(loadingManager),
   Renderer : new THREE.WebGLRenderer({antialias:true})
 };
 
@@ -78,12 +81,12 @@ let box = function (x, y, z, material) {
 let skyBox = function (front, back, up, down, left, right) {
   // Sky Box Material
   let skyBoxTextures = [
-    new THREE.MeshBasicMaterial( { map: new THREE.TextureLoader().load(front), side: THREE.BackSide } ),
-    new THREE.MeshBasicMaterial( { map: new THREE.TextureLoader().load(back), side: THREE.BackSide } ),
-    new THREE.MeshBasicMaterial( { map: new THREE.TextureLoader().load(up), side: THREE.BackSide } ),
-    new THREE.MeshBasicMaterial( { map: new THREE.TextureLoader().load(down), side: THREE.BackSide } ),
-    new THREE.MeshBasicMaterial( { map: new THREE.TextureLoader().load(right), side: THREE.BackSide } ),
-    new THREE.MeshBasicMaterial( { map: new THREE.TextureLoader().load(left), side: THREE.BackSide } )
+    new THREE.MeshBasicMaterial( { map: new THREE.TextureLoader(loadingManager).load(front), side: THREE.BackSide } ),
+    new THREE.MeshBasicMaterial( { map: new THREE.TextureLoader(loadingManager).load(back), side: THREE.BackSide } ),
+    new THREE.MeshBasicMaterial( { map: new THREE.TextureLoader(loadingManager).load(up), side: THREE.BackSide } ),
+    new THREE.MeshBasicMaterial( { map: new THREE.TextureLoader(loadingManager).load(down), side: THREE.BackSide } ),
+    new THREE.MeshBasicMaterial( { map: new THREE.TextureLoader(loadingManager).load(right), side: THREE.BackSide } ),
+    new THREE.MeshBasicMaterial( { map: new THREE.TextureLoader(loadingManager).load(left), side: THREE.BackSide } )
   ];
   let theSkyBox = new box( 5000, 5000, 5000, skyBoxTextures );
   WebRenderer3.MainScene.add(theSkyBox);
@@ -116,9 +119,8 @@ let ModelLoader_GLTF = function(url, name, defaultScale, defaultPosition, defaul
       WebRenderer3.MainScene.add(mesh);
       if(parentObject !== undefined && parentObject !== null){
         parentObject.add(mesh);
-        console.log(mesh);
-        return mesh;
       }
+      return mesh;
     },
     // called when loading is in progresses
     function ( xhr ) {
@@ -175,6 +177,9 @@ let GameLoop = function(){
   requestAnimationFrame(GameLoop);
 };
 
+loadingManager.onLoad = () => {
+  document.getElementById('loadingScreen').style.display  = 'none';
+};
 /*************Engine*************/
 let start = function(){
   skyBox('../assets/SkyBox/front.png', '../assets/SkyBox/back.png', '../assets/SkyBox/up.png', '../assets/SkyBox/down.png', '../assets/SkyBox/left.png', '../assets/SkyBox/right.png');
@@ -197,15 +202,11 @@ let start = function(){
   WebRenderer3.Renderer.gammaOutput = true;
   WebRenderer3.MainCamera.position.z = 250;
   WebRenderer3.MainCamera.position.y = 0;
-
-  console.log(armChair);
 };
-
 
 let update = function(){
   // Orbit Control update
   OrbitController.update();
 };
-
 /************Execution***********/
 init();

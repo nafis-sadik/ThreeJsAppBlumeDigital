@@ -1,6 +1,9 @@
 /***********Application***********/
 
-let modelURL1 = "../assets/armchair/scene.gltf";
+let port = ':5501';
+let HostUrl = 'http://' + window.location.hostname + port;
+let modelURL1 = HostUrl + "/assets/armchair/scene.gltf";
+console.log(modelURL1);
 
 /***********System Config***********/
 import * as THREE from '../lib/threejs/build/three.module.js';
@@ -182,7 +185,12 @@ loadingManager.onLoad = () => {
 };
 /*************Engine*************/
 let start = function(){
-  skyBox('../assets/SkyBox/front.png', '../assets/SkyBox/back.png', '../assets/SkyBox/up.png', '../assets/SkyBox/down.png', '../assets/SkyBox/left.png', '../assets/SkyBox/right.png');
+  skyBox(HostUrl + '/assets/SkyBox/front.png',
+          HostUrl + '/assets/SkyBox/back.png',
+          HostUrl + '/assets/SkyBox/up.png',
+          HostUrl + '/assets/SkyBox/down.png',
+          HostUrl + '/assets/SkyBox/left.png',
+          HostUrl + '/assets/SkyBox/right.png');
 
   let Sun = AddLight("DirectionalLight", "#aac0c0", true, "Sun");
   Sun.position.set(25, 90, 25);

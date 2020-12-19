@@ -1,6 +1,9 @@
 /***********Application***********/
 
-let modelURL1 = "../assets/sci-fi_girl_v.02_walkcycle_test/scene.gltf";
+let port = ':5501';
+let HostUrl = 'http://' + window.location.hostname + port;
+let modelURL1 = HostUrl + "/assets/armchair/scene.gltf";
+console.log(modelURL1);
 
 /***********System Config***********/
 import * as THREE from '../lib/threejs/build/three.module.js';
@@ -40,10 +43,6 @@ let ConfigureRenderer = function(){
   // Set size
   WebRenderer3.Renderer.setSize ( RendererConfig.Width, RendererConfig.Height );
   Composer.setSize(RendererConfig.Width, RendererConfig.Height);
-
-  // Other settings
-  WebRenderer3.Renderer.setClearColor();
-  WebRenderer3.Renderer.outputEncoding = THREE.GammaEncoding;
 
   // Update Aspect Ratio
   WebRenderer3.MainCamera.aspect = WebRenderer3.Renderer.getPixelRatio();
@@ -186,24 +185,29 @@ loadingManager.onLoad = () => {
 };
 /*************Engine*************/
 let start = function(){
-  skyBox('../assets/SkyBox/front.png', '../assets/SkyBox/back.png', '../assets/SkyBox/up.png', '../assets/SkyBox/down.png', '../assets/SkyBox/left.png', '../assets/SkyBox/right.png');
+  skyBox(HostUrl + '/assets/SkyBox/front.png',
+          HostUrl + '/assets/SkyBox/back.png',
+          HostUrl + '/assets/SkyBox/up.png',
+          HostUrl + '/assets/SkyBox/down.png',
+          HostUrl + '/assets/SkyBox/left.png',
+          HostUrl + '/assets/SkyBox/right.png');
 
-  let Sun = AddLight("DirectionalLight", "#abbdc1", true, "Sun");
-  Sun.position.set(0, 50, 0);
+  let Sun = AddLight("DirectionalLight", "#aac0c0", true, "Sun");
+  Sun.position.set(25, 90, 25);
 
   // Adding Lights
-  let PointLight1 = AddLight("PointLight", '#abbdc1', true, "PointLight1");
-  PointLight1.position.set(0, 0,-20);
-  let PointLight2 = AddLight("PointLight", '#708dc1', true, "PointLight2");
-  PointLight2.position.set(0, 0, 20);
-  // let PointLight3 = AddLight("PointLight", '#708dc1', true, "PointLight3");
-  // PointLight3.position.set(500,30,0);
-  // let PointLight4 = AddLight("PointLight", '#708dc1', true, "PointLight4");
-  // PointLight4.position.set(-500,30,0);
+  let PointLight1 = AddLight("PointLight", '#abbdc1', true, "PointLight2");
+  PointLight1.position.set(500,300,0);
+  let PointLight2 = AddLight("PointLight", '#708dc1', true, "PointLight4 ");
+  PointLight2.position.set(-500,300,500);
+  let PointLight3 = AddLight("PointLight", '#708dc1', true, "PointLight4 ");
+  PointLight3.position.set(0,300,0);
   // Lights Added
 
   // Loading 3d Model
-  let armChair = ModelLoader_GLTF(modelURL1, "model1", new THREE.Vector3(5, 5, 5), new THREE.Vector3(0, -50, 0), new THREE.Vector3(0, 0, 0));
+  let armChair = ModelLoader_GLTF(modelURL1, "model1", new THREE.Vector3(0.1, 0.1, 0.1), new THREE.Vector3(0, -50, 0), new THREE.Vector3(0, 0, 0));
+  WebRenderer3.Renderer.setClearColor();
+  WebRenderer3.Renderer.gammaOutput = true;
   WebRenderer3.MainCamera.position.z = 250;
   WebRenderer3.MainCamera.position.y = 0;
 };
@@ -211,11 +215,6 @@ let start = function(){
 let update = function(){
   // Orbit Control update
   OrbitController.update();
-  let sun = WebRenderer3.MainScene.getObjectByName("Sun");
-
-  if(sun != null){
-    sun.rotation.set(sun.rotation.x + 15, sun.rotation.y, sun.rotation.z);
-  }
 };
 /************Execution***********/
 init();

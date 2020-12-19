@@ -1,6 +1,6 @@
 /***********Application***********/
 
-let port = ':5501';
+let port = '/ThreeJsAppBlumeDigital';
 let HostUrl = 'http://' + window.location.hostname + port;
 let modelURL1 = HostUrl + "/assets/armchair/scene.gltf";
 console.log(modelURL1);
